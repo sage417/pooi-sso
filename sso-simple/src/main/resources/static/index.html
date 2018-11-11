@@ -44,7 +44,8 @@
     });
 
     $.get("/user", function(data) {
-        $("#user").html(data.userAuthentication.details.name);
+        if (!data.name) return
+        $("#user").html(data.name);
         $(".unauthenticated").hide();
         $(".authenticated").show();
     });
