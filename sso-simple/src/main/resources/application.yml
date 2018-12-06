@@ -27,4 +27,6 @@ security:
       client-secret: acmesecret
       scope: read,write
       auto-approve-scopes: '.*'
-      registered-redirect-uri: http://127.0.0.1:9999/client/login
+      registered-redirect-uri:
+      - http://127.0.0.1:9999/client/login
+      - http://sso-auth-client:9999/client/login

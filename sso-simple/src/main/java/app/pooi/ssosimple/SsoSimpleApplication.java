@@ -10,6 +10,7 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
@@ -42,10 +43,9 @@ import java.util.Map;
 public class SsoSimpleApplication extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    OAuth2ClientContext oauth2ClientContext;
+    private OAuth2ClientContext oauth2ClientContext;
 
-
-    @RequestMapping({ "/user", "/me" })
+    @RequestMapping({"/user", "/me"})
     public Map<String, String> user(Principal principal) {
         Map<String, String> map = new LinkedHashMap<>();
         map.put("name", principal.getName());
@@ -57,13 +57,21 @@ public class SsoSimpleApplication extends WebSecurityConfigurerAdapter {
     }
 
     @Override
+    public void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.inMemoryAuthentication()
+                .withUser("marissa").password("{noop}koala").roles("USER")
+                .and()
+                .withUser("paul").password("{noop}emu").roles("USER");
+    }
+
+    @Override
     protected void configure(HttpSecurity http) throws Exception {
-
-
         http.antMatcher("/**").authorizeRequests().antMatchers("/", "/login**", "/webjars/**").permitAll().anyRequest()
                 .authenticated().and().exceptionHandling()
-                .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/")).and().logout()
-                .logoutSuccessUrl("/").permitAll().and().csrf()
+                .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/"))
+                .and().logout().logoutSuccessUrl("/").permitAll()
+                .and().formLogin()
+                .and().csrf()
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).and()
                 .addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class);
     }
@@ -121,7 +129,6 @@ public class SsoSimpleApplication extends WebSecurityConfigurerAdapter {
         }
     }
 }
-
 
 
 class ClientResources {
