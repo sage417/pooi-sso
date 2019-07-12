@@ -18,7 +18,7 @@ github:
     userAuthorizationUri: https://github.com/login/oauth/authorize
     clientAuthenticationScheme: form
     useCurrentUri: false
-    preEstablishedRedirectUri: https://yamato.moe/login/github
+    preEstablishedRedirectUri: http://localhost:8080/login/github
   resource:
     userInfoUri: https://api.github.com/user
 
@@ -35,5 +35,36 @@ security:
 
 spring:
   datasource:
+#    url: jdbc:hsqldb://localhost:3306/auth
     username: sa
     password: sa
+
+---
+spring:
+  profiles: test
+
+github:
+  client:
+    clientId: 3fbc0a2841bc92085523
+    clientSecret: 23a6b873d7b25e3ed8fab52954978cc4b52cfec6
+    accessTokenUri: https://github.com/login/oauth/access_token
+    userAuthorizationUri: https://github.com/login/oauth/authorize
+    clientAuthenticationScheme: form
+  resource:
+    userInfoUri: https://api.github.com/user
+
+---
+spring:
+  profiles: pro
+
+github:
+  client:
+    clientId: 3fbc0a2841bc92085523
+    clientSecret: 23a6b873d7b25e3ed8fab52954978cc4b52cfec6
+    accessTokenUri: https://github.com/login/oauth/access_token
+    userAuthorizationUri: https://github.com/login/oauth/authorize
+    clientAuthenticationScheme: form
+    useCurrentUri: false
+    preEstablishedRedirectUri: http://localhost:8080/login/github
+  resource:
+    userInfoUri: https://api.github.com/user
