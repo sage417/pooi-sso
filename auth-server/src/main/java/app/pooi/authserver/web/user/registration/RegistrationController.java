@@ -1,34 +1,47 @@
 package app.pooi.authserver.web.user.registration;
 
-import app.pooi.authserver.user.LoginUser;
-import app.pooi.authserver.user.LoginUserService;
+import app.pooi.authserver.user.registration.EmailExistsException;
+import app.pooi.authserver.user.registration.UserRegistrationService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
+import javax.validation.Valid;
+import java.util.stream.Collectors;
 
 @RestController
 public class RegistrationController {
 
     @Autowired
-    LoginUserService loginUserService;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    UserRegistrationService userRegistrationService;
 
 
     @RequestMapping(value = "/user/registration")
-    public String showRegistrationForm(@RequestBody UserDto userDto, BindingResult result) {
+    public String registerUserAccount(@RequestBody @Valid RegisterUserDto registerUserDto, BindingResult errors) {
 
-        final LoginUser loginUser = new LoginUser();
-        loginUser.setUsername(userDto.getEmail());
-        loginUser.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        loginUser.setEnable(true);
+        if (errors.hasErrors()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, getMessage(errors), null);
+        }
 
-        LoginUser user = (LoginUser) this.loginUserService.saveUser(loginUser);
+        try {
+            userRegistrationService.registerNewUserAccount(registerUserDto);
+        } catch (EmailExistsException e) {
+            errors.rejectValue("email", "message.regError");
+        }
 
+        if (errors.hasErrors()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, getMessage(errors), null);
+        }
         return "ok";
+    }
+
+    private String getMessage(BindingResult errors) {
+        return errors.getFieldErrors().stream().map(FieldError::getDefaultMessage).collect(Collectors.joining(","));
     }
 
 }
